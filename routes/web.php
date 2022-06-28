@@ -15,6 +15,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::view('/', 'welcome');
+Route::post(
+    '/livewire', function () {
+        return request()->all();
+    }
+);
 
 Blade::directive(
     'livewire', function ($expression) {
