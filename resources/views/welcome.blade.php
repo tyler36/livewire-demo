@@ -9,7 +9,6 @@
                 if (!e.target.hasAttribute('wire:click')) return;
 
                 let method = e.target.getAttribute('wire:click');
-
                 fetch('/livewire', {
                     method:  'POST',
                     headers: {'Content-Type': 'application/json'},

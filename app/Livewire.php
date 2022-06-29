@@ -23,15 +23,8 @@ class Livewire
     {
         $component = new $class;
 
-        $html = Blade::render(
-            $component->render(),
-            $this->getProperties($component)
-        );
+        [$html, $snapshot] = $this->toSnapshot($component);
 
-        $snapshot = [
-            'class' => get_class($component),
-            'data' => $this->getProperties($component)
-        ];
         $snapshotAttribute = htmlentities(json_encode($snapshot));
 
         return <<<HTML
@@ -40,6 +33,45 @@ class Livewire
             </div>
         HTML;
     }
+
+    /**
+     * Instantiate a class from snapshot
+     *
+     * @param Array $snapshot
+     * @return void
+     */
+    public function fromSnapshot($snapshot)
+    {
+        $class = $snapshot['class'];
+        $data = $snapshot['data'];
+
+        $component = new $class;
+        $this->setProperties($component, $data);
+        
+        return $component;
+    }
+
+    /**
+     * Convert a component into a snapshot
+     *
+     * @param [type] $component
+     * @return void
+     */
+    public function toSnapshot($component)
+    {
+        $html = Blade::render(
+            $component->render(),
+            $properties = $this->getProperties($component)
+        );
+
+        $snapshot = [
+            'class' => get_class($component),
+            'data'  => $properties
+        ];
+
+        return [$html, $snapshot];
+    }
+
 
     /**
      * Return an array of public properties
@@ -60,4 +92,29 @@ class Livewire
         return $properties;
     }
 
+    /**
+     * Set public properties on conponent
+     *
+     * @param stdClass $component Component to set
+     * @param Array $properties
+     * @return void
+     */
+    public function setProperties($component, $properties)
+    {
+        foreach ($properties as $key => $value) {
+            $component->{$key} = $value;
+        }
+    }
+
+    /**
+     * Call a specific method on a $component
+     *
+     * @param stdClass $component
+     * @param String $method
+     * @return void
+     */
+    public function callMethod($component, $method)
+    {
+        $component->{$method}();
+    }
 }
