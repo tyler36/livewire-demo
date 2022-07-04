@@ -21,6 +21,7 @@ class Counter
                 <div class="p-12 text-5xl text-center text-blue-700 border-4 border-blue-700 rounded-full counter">
                     <span>{{ $count }}</span>
                     <button wire:click="increment">+</button>
+                    <input>
                 </div>
             </div>
         HTML;
