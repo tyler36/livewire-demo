@@ -47,7 +47,7 @@ class Livewire
 
         $component = new $class;
         $this->setProperties($component, $data);
-        
+
         return $component;
     }
 
@@ -116,5 +116,18 @@ class Livewire
     public function callMethod($component, $method)
     {
         $component->{$method}();
+    }
+
+    /**
+     * Update a specific property
+     *
+     * @param stdClass $component
+     * @param String $propery
+     * @param String $value
+     * @return void
+     */
+    public function updateProperty($component, $property, $value)
+    {
+        $component->{$property} = $value;
     }
 }

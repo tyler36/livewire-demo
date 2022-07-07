@@ -7,7 +7,8 @@ namespace App\Http\Livewire;
  */
 class Todos
 {
-    public $draft;
+    public $draft = 'Some todos ...';
+
     public $todos = [
         'One todo',
         'Two todo',
