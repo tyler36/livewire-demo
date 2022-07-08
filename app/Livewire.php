@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
@@ -23,11 +24,11 @@ class Livewire
      */
     function initialRender($class)
     {
-        $component = new $class;
+        $component = new $class();
 
-    if (method_exists($component, 'mount')) {
-        $component->mount();
-    }
+        if (method_exists($component, 'mount')) {
+            $component->mount();
+        }
 
         [$html, $snapshot] = $this->toSnapshot($component);
 
@@ -48,11 +49,13 @@ class Livewire
      */
     public function fromSnapshot($snapshot)
     {
+        $this->verifyChecksum($snapshot);
+
         $class = $snapshot['class'];
         $data = $snapshot['data'];
         $meta = $snapshot['meta'];
 
-        $component = new $class;
+        $component = new $class();
 
         $properties = $this->hydrateProperties($data, $meta);
 
@@ -61,12 +64,21 @@ class Livewire
         return $component;
     }
 
+    public function verifyChecksum($snapshot)
+    {
+        $checksum = $snapshot['checksum'];
+        unset($snapshot['checksum']);
+
+        if ($checksum !== $this->generateChecksum($snapshot)) {
+            throw new Exception('Hey, stop hacking me!');
+        }
+    }
     public function hydrateProperties($data, $meta)
     {
         $properties = [];
 
         foreach ($data as $key => $value) {
-            if (isset($meta[$key]) && $meta[$key] === 'collection' ) {
+            if (isset($meta[$key]) && $meta[$key] === 'collection') {
                 $value = collect($value);
             }
 
@@ -98,7 +110,14 @@ class Livewire
             'meta'  => $meta,
         ];
 
+        $snapshot['checksum'] = $this->generateChecksum($snapshot);
+
         return [$html, $snapshot];
+    }
+
+    public function generateChecksum($snapshot)
+    {
+        return md5(json_encode($snapshot));
     }
 
     public function dehydrateProperties($properties)
@@ -174,7 +193,7 @@ class Livewire
     {
         $component->{$property} = $value;
 
-        $updatedHook = 'updated'. Str::title($property);
+        $updatedHook = 'updated' . Str::title($property);
 
         if (method_exists($component, $updatedHook)) {
             $component->{$updatedHook}();
